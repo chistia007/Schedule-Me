@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Schedule Me</string>
+    <string name="app_name" >Schedule Me</string>
+    <string name="bucket_text" >ALL TASKS</string>
 </resources>
