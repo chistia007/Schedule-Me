@@ -1,4 +1,4 @@
-package com.example.scheduleme.Service.Model;
+package com.example.scheduleme.Service.Model.UI;
 
 public class Task {
     private String title;

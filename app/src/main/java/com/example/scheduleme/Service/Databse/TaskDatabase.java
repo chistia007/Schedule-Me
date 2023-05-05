@@ -8,10 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.scheduleme.Service.Model.Task;
+import com.example.scheduleme.Service.Model.UI.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,17 +22,50 @@ public class TaskDatabase extends SQLiteOpenHelper {
     long rowId;
     Cursor cursor;
     int nextKey;
-    private static TaskDatabase taskDatabase;
-    private static MutableLiveData<List<Task>> tasksLiveData = new MutableLiveData<>(new ArrayList<>());
+    List<Task> tasks;
+    List<Task> allTasks;
+    List<Task> houseTasks;
+    List<Task> officeTasks;
+    List<Task> extraCurrTasks;
+    List<Task> learningTasks;
+    List<Task> doneTasks;
 
-    private TaskDatabase(Context context, MutableLiveData<List<Task>> tasksLiveData) {
+    private static TaskDatabase taskDatabase;
+    private static MutableLiveData<List<Task>> allTasksLiveData = new MutableLiveData<>(new ArrayList<>());
+    private static MutableLiveData<List<Task>> officeTasLiveData = new MutableLiveData<>(new ArrayList<>());
+    private static MutableLiveData<List<Task>> houseTaskLiveData = new MutableLiveData<>(new ArrayList<>());
+    private static MutableLiveData<List<Task>> extraTasksLiveData = new MutableLiveData<>(new ArrayList<>());
+    private static MutableLiveData<List<Task>> learningTasksLiveData = new MutableLiveData<>(new ArrayList<>());
+    private static MutableLiveData<List<Task>> doneTasksLiveData = new MutableLiveData<>(new ArrayList<>());
+
+    private TaskDatabase(Context context, MutableLiveData<List<Task>> allTasksLiveData,MutableLiveData<List<Task>> officeTasLiveData,
+                         MutableLiveData<List<Task>> houseTaskLiveData,MutableLiveData<List<Task>> extraTasksLiveData,
+                         MutableLiveData<List<Task>> learningTasksLiveData,MutableLiveData<List<Task>> doneTasksLiveData) {
         super(context, dbName, null, 1);
-        this.tasksLiveData=tasksLiveData;
+        this.allTasksLiveData=allTasksLiveData;
+        this.officeTasLiveData=officeTasLiveData;
+        this.houseTaskLiveData=houseTaskLiveData;
+        this.extraTasksLiveData=extraTasksLiveData;
+        this.learningTasksLiveData=learningTasksLiveData;
+        this.doneTasksLiveData=doneTasksLiveData;
+
+        allTasks= getTasks("allTasks");
+        allTasksLiveData.postValue(allTasks);
+        officeTasks= getTasks("officeWork");
+        officeTasLiveData.postValue(allTasks);
+        houseTasks= getTasks("houseWork");
+        houseTaskLiveData.postValue(allTasks);
+        learningTasks= getTasks("learning");
+        learningTasksLiveData.postValue(allTasks);
+        extraCurrTasks= getTasks("extraCurr");
+        extraTasksLiveData.postValue(allTasks);
+        doneTasks= getTasks("doneTasks");
+        doneTasksLiveData.postValue(allTasks);
     }
 
     public static synchronized TaskDatabase getInstance(Context context) {
         if (taskDatabase == null) {
-            taskDatabase = new TaskDatabase(context, tasksLiveData);
+            taskDatabase = new TaskDatabase(context, allTasksLiveData,officeTasLiveData,houseTaskLiveData,extraTasksLiveData,learningTasksLiveData,doneTasksLiveData);
         }
         return taskDatabase;
     }
@@ -84,28 +116,37 @@ public class TaskDatabase extends SQLiteOpenHelper {
         switch(selectTable){
             case "officeWork":
                 rowId = db.insert("officeWork", null, c);
-                db.close();
+                // Get the latest list of tasks from the database
+                officeTasks = getTasks("officeWork");
+                officeTasLiveData.postValue(officeTasks);
+
             case "houseWork":
                 rowId = db.insert("houseWork", null, c);
-                db.close();
+                houseTasks = getTasks("houseWork");
+                houseTaskLiveData.postValue(houseTasks);
+
             case "learning":
                 rowId = db.insert("learning", null, c);
-                db.close();
+                learningTasks = getTasks("learning");
+                learningTasksLiveData.postValue(learningTasks);
+
             case "extraCurr":
                 rowId = db.insert("extraCurr", null, c);
-                db.close();
+
+                extraCurrTasks = getTasks("extraCurr");
+                extraTasksLiveData.postValue(extraCurrTasks);
             default:
                 break;
 
 
         }
         // Get the latest list of tasks from the database
-        List<Task> tasks = getTasks("allTasks");
-        if(tasksLiveData==null){
-            tasksLiveData=new MutableLiveData<>();
+        allTasks = getTasks("allTasks");
+        if(allTasksLiveData==null){
+            allTasksLiveData=new MutableLiveData<>();
         }
         // Update the LiveData object with the latest list of tasks
-        tasksLiveData.setValue(tasks);
+        allTasksLiveData.postValue(allTasks);
         return rowId;
 
     }
@@ -167,10 +208,29 @@ public class TaskDatabase extends SQLiteOpenHelper {
         return tasks;
     }
 
-    public MutableLiveData<List<Task>> getTasksLiveData() {
-        return tasksLiveData;
+
+
+    public MutableLiveData<List<Task>> getAllTasksLiveData() {
+        return allTasksLiveData;
     }
-    //     Update database(name and password using username)
+    public MutableLiveData<List<Task>> getOfficeTasksLiveData() {
+        return officeTasLiveData;
+    }
+    public MutableLiveData<List<Task>> getHouseTasksLiveData() {
+        return houseTaskLiveData;
+    }
+    public MutableLiveData<List<Task>> getLearningTasksLiveData() {
+        return learningTasksLiveData;
+    }
+    public MutableLiveData<List<Task>> getExtraCurrTasksLiveData() {
+        return extraTasksLiveData;
+    }
+    public MutableLiveData<List<Task>> getDoneTasksLiveData() {
+        return doneTasksLiveData;
+    }
+
+
+    /**Update database(name and password using username)*/
     public boolean updateDatabase(String selectTable, long _id, String title, String description, String dueDate,int corrTabID,String corrTabName, boolean navigation_clicked) {
         db = this.getWritableDatabase();
         ContentValues c = new ContentValues();
@@ -232,6 +292,9 @@ public class TaskDatabase extends SQLiteOpenHelper {
         c.put("dueDate",dueDate);
         c.put("correspondingTable",corrTabName);
         db.insert("doneTasks", null, c);
+
+        doneTasks=getTasks("doneTasks");
+        doneTasksLiveData.postValue(doneTasks);
         long r = 0;
         long r1=0;
         long id1;
