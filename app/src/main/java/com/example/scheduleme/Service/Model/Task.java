@@ -1,4 +1,4 @@
-package com.example.scheduleme.Service.Model.UI;
+package com.example.scheduleme.Service.Model;
 
 public class Task {
     private String title;
@@ -14,6 +14,13 @@ public class Task {
         this.description = description;
         this.dueDate = dueDate;
         this._id=id;
+    }
+    public Task(int id, String title, String description, String dueDate,Boolean isChecked) {
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this._id=id;
+        this.isChecked=isChecked;
     }
 
 

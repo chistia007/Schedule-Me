@@ -1,4 +1,4 @@
-package com.example.scheduleme.Service.Model.Adapter;
+package com.example.scheduleme.View.Adapter;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.scheduleme.R;
-import com.example.scheduleme.Service.Model.Interface.OnItemClickListener;
-import com.example.scheduleme.Service.Model.UI.Task;
+import com.example.scheduleme.View.Interface.OnItemClickListener;
+import com.example.scheduleme.Service.Model.Task;
 
 import java.util.List;
 

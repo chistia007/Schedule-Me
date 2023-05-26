@@ -1,4 +1,4 @@
-package com.example.scheduleme.Service.Model.Interface;
+package com.example.scheduleme.View.Interface;
 
 import android.view.View;
 

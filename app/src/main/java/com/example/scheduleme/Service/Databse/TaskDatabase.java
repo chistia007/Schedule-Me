@@ -10,7 +10,7 @@ import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.scheduleme.Service.Model.UI.Task;
+import com.example.scheduleme.Service.Model.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,16 +51,21 @@ public class TaskDatabase extends SQLiteOpenHelper {
 
         allTasks= getTasks("allTasks");
         allTasksLiveData.postValue(allTasks);
+
         officeTasks= getTasks("officeWork");
-        officeTasLiveData.postValue(allTasks);
+        officeTasLiveData.postValue(officeTasks);
+
         houseTasks= getTasks("houseWork");
-        houseTaskLiveData.postValue(allTasks);
+        houseTaskLiveData.postValue(houseTasks);
+
         learningTasks= getTasks("learning");
-        learningTasksLiveData.postValue(allTasks);
+        learningTasksLiveData.postValue(learningTasks);
+
         extraCurrTasks= getTasks("extraCurr");
-        extraTasksLiveData.postValue(allTasks);
+        extraTasksLiveData.postValue(extraCurrTasks);
+
         doneTasks= getTasks("doneTasks");
-        doneTasksLiveData.postValue(allTasks);
+        doneTasksLiveData.postValue(doneTasks);
     }
 
     public static synchronized TaskDatabase getInstance(Context context) {
@@ -111,7 +116,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
         c.put("description",description);
         c.put("dueDate",dueDate);
         c.put("correspondingTableId",rowId);  // remember here i am passing the id of allTasks
-        c.put("correspondingTable",selectTable); // here i will passing it own tale name so that when i click on officeWork, i know it's office works table from inItemclick
+        c.put("correspondingTable",selectTable); // here i will passing it own tale name so that when i click on officeWork, i know it's office works table from onItemclick
 
         switch(selectTable){
             case "officeWork":
@@ -119,32 +124,27 @@ public class TaskDatabase extends SQLiteOpenHelper {
                 // Get the latest list of tasks from the database
                 officeTasks = getTasks("officeWork");
                 officeTasLiveData.postValue(officeTasks);
-
+                break;
             case "houseWork":
                 rowId = db.insert("houseWork", null, c);
                 houseTasks = getTasks("houseWork");
                 houseTaskLiveData.postValue(houseTasks);
-
+                break;
             case "learning":
                 rowId = db.insert("learning", null, c);
                 learningTasks = getTasks("learning");
                 learningTasksLiveData.postValue(learningTasks);
-
+                break;
             case "extraCurr":
                 rowId = db.insert("extraCurr", null, c);
-
                 extraCurrTasks = getTasks("extraCurr");
                 extraTasksLiveData.postValue(extraCurrTasks);
+                break;
             default:
                 break;
-
-
         }
         // Get the latest list of tasks from the database
         allTasks = getTasks("allTasks");
-        if(allTasksLiveData==null){
-            allTasksLiveData=new MutableLiveData<>();
-        }
         // Update the LiveData object with the latest list of tasks
         allTasksLiveData.postValue(allTasks);
         return rowId;
@@ -154,11 +154,11 @@ public class TaskDatabase extends SQLiteOpenHelper {
     public Cursor getInfo(String selectTable) {
         db = this.getWritableDatabase();
         switch (selectTable) {
-            case "office":
+            case "officeWork":
                 cursor = db.rawQuery("select * from officeWork ", null);
                 break;
 
-            case "house":
+            case "houseWork":
                 cursor = db.rawQuery("select * from houseWork ", null);
                 break;
 
@@ -166,7 +166,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
                 cursor = db.rawQuery("select * from learning ", null);
                 break;
 
-            case "extra":
+            case "extraCurr":
                 cursor = db.rawQuery("select * from extraCurr ", null);
                 break;
             case "doneTasks":
@@ -190,14 +190,23 @@ public class TaskDatabase extends SQLiteOpenHelper {
 
         Task task;
 
+
         if (cursor.moveToFirst()) {
             do {
                 @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("_id"));
                 @SuppressLint("Range") String title = cursor.getString(cursor.getColumnIndex("title"));
                 @SuppressLint("Range") String description = cursor.getString(cursor.getColumnIndex("description"));
                 @SuppressLint("Range") String dueDate = cursor.getString(cursor.getColumnIndex("dueDate"));
+                @SuppressLint("Range") String corrTab = cursor.getString(cursor.getColumnIndex("correspondingTable"));
 
-                task = new Task(id, title, description, dueDate); // Create a new Task object
+                if(selectTable=="doneTasks"){
+                    task = new Task(id, title, description, dueDate,true,corrTab);
+                }
+                else{
+                    @SuppressLint("Range") int corrTabId = Integer.parseInt(cursor.getString(cursor.getColumnIndex("correspondingTableId")));
+                    task = new Task(id, title, description, dueDate,false,corrTabId,corrTab);
+                }
+
 
                 tasks.add(task); // Add the new Task object to the list of tasks
             } while (cursor.moveToNext());
@@ -209,7 +218,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
     }
 
 
-
+/** Get live data update implementing these */
     public MutableLiveData<List<Task>> getAllTasksLiveData() {
         return allTasksLiveData;
     }
@@ -241,6 +250,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
         String[] selectionArgs = new String[0];
         String selection1 = null;
         String[] selectionArgs1 = new String[0];
+
         // Specify the selection criteria as the _id field
         if (navigation_clicked){
             selection = "_id=?";
@@ -255,37 +265,56 @@ public class TaskDatabase extends SQLiteOpenHelper {
             selectionArgs = new String[]{String.valueOf(corrTabID)};
         }
 
-
         if (corrTabName.equals("allTasks")&& selectTable.equals("allTasks")){
             int numRowsAffected1 = db.update("allTasks", c, selection, selectionArgs);
+            allTasks = getTasks("allTasks");
+            allTasksLiveData.postValue(allTasks);
             return numRowsAffected1 > 0;
         }
         else if (corrTabName.equals("officeWork")&& (selectTable.equals("officeWork")||selectTable.equals("allTasks"))){
             int numRowsAffected1 = db.update("officeWork", c, selection1, selectionArgs1);
             int numRowsAffected2 = db.update("allTasks", c, selection, selectionArgs);
+            allTasks = getTasks("allTasks");
+            allTasksLiveData.postValue(allTasks);
+            officeTasks = getTasks("officeWork");
+            officeTasLiveData.postValue(officeTasks);
             return numRowsAffected2 > 0;
         }
         else if (corrTabName.equals("houseWork")&& (selectTable.equals("houseWork")||selectTable.equals("allTasks"))){
             int numRowsAffected1 = db.update("houseWork", c, selection1, selectionArgs1);
             int numRowsAffected2 = db.update("allTasks", c, selection, selectionArgs);
+            allTasks = getTasks("allTasks");
+            allTasksLiveData.postValue(allTasks);
+            houseTasks = getTasks("houseWork");
+            houseTaskLiveData.postValue(houseTasks);
             return numRowsAffected2 > 0;
         }
         else if (corrTabName.equals("learning")&& (selectTable.equals("learning")||selectTable.equals("allTasks"))){
             int numRowsAffected1 = db.update("learning", c, selection1, selectionArgs1);
             int numRowsAffected2 = db.update("allTasks", c, selection, selectionArgs);
+            allTasks = getTasks("allTasks");
+            allTasksLiveData.postValue(allTasks);
+            learningTasks = getTasks("learning");
+            learningTasksLiveData.postValue(learningTasks);
             return numRowsAffected2 > 0;
         }
         else if (corrTabName.equals("extraCurr")&& (selectTable.equals("extraCurr")||selectTable.equals("allTasks"))){
             int numRowsAffected1 = db.update("extraCurr", c, selection1, selectionArgs1);
             int numRowsAffected2 = db.update("allTasks", c, selection, selectionArgs);
+            allTasks = getTasks("allTasks");
+            allTasksLiveData.postValue(allTasks);
+            extraCurrTasks = getTasks("extraCurr");
+            extraTasksLiveData.postValue(extraCurrTasks);
             return numRowsAffected2 > 0;
         }
-        else{return false;}
-
+        else{
+            return false;
+        }
     }
     //Delete a data
     public boolean deleteData(long id, String title, String description, String dueDate,int corrTabID,String corrTabName, boolean navigation_clicked){
         db = this.getWritableDatabase();
+        //adding to done task table first before deleting from regular tables
         c=new ContentValues();
         c.put("title",title);
         c.put("description",description);
@@ -295,6 +324,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
 
         doneTasks=getTasks("doneTasks");
         doneTasksLiveData.postValue(doneTasks);
+
         long r = 0;
         long r1=0;
         long id1;
@@ -312,16 +342,31 @@ public class TaskDatabase extends SQLiteOpenHelper {
         }
 
         //Delete operation
-        try {
-            r = db.delete("allTasks", "_id=?", new String[]{String.valueOf(id1)});
+        r = db.delete("allTasks", "_id=?", new String[]{String.valueOf(id1)});
+        allTasks=getTasks("allTasks");
+        allTasksLiveData.postValue(allTasks);
+
+        if(corrTabName!=null && corrTabName!="allTasks"){
             r1= db.delete(""+corrTabName, "_id=?", new String[]{String.valueOf(id2)});
-            // Perform database operations...
-        } catch (Exception e) {
-            Log.e("TAG", "Error occurred while performing database operations: " + e.getMessage());
         }
 
-        Log.d("444444444444", "deleteData: "+navigation_clicked + id1 + " " + id2+ " "+ corrTabName);
+        if (corrTabName.equals("officeWork")){
+            officeTasks = getTasks("officeWork");
+            officeTasLiveData.postValue(officeTasks);
 
+        }
+        else if (corrTabName.equals("houseWork")){
+            houseTasks = getTasks("houseWork");
+            houseTaskLiveData.postValue(houseTasks);
+        }
+        else if (corrTabName.equals("learning")){
+            learningTasks = getTasks("learning");
+            learningTasksLiveData.postValue(learningTasks);
+        }
+        else if (corrTabName.equals("extraCurr")){
+            extraCurrTasks = getTasks("extraCurr");
+            extraTasksLiveData.postValue(extraCurrTasks);
+        }
 
         if (r == -1 || r1==-1) {
             return false;
@@ -329,8 +374,6 @@ public class TaskDatabase extends SQLiteOpenHelper {
         else {
             return true;
         }
-
-
     }
 
     public int getLastAutoGeneratedKey(String tableName) {
@@ -339,7 +382,6 @@ public class TaskDatabase extends SQLiteOpenHelper {
         if (tableName == null || tableName.isEmpty()) {
             return nextKey;  // Return 0 if tableName is null or empty
         }
-
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT seq FROM sqlite_sequence WHERE name = '" + tableName + "'";
         Cursor cursor = db.rawQuery(query, null);
@@ -350,23 +392,14 @@ public class TaskDatabase extends SQLiteOpenHelper {
         } else {
             nextKey = 1;
         }
-
-//        cursor.close();
-//        db.close();
-
         return nextKey;
-
-
-
     }
 
-    public void doneTaskDelete(long id){
+    public void DeleteFromDoneTaskTable(long id){
         db = this.getWritableDatabase();
-        try {
-            db.delete("doneTasks", "_id=?", new String[]{String.valueOf(id)});
-            // Perform database operations...
-        } catch (Exception e) {
-            Log.e("TAG", "Error occurred while performing database operations: " + e.getMessage());
-        }
+        db.delete("doneTasks", "_id=?", new String[]{String.valueOf(id)});
+        doneTasks=getTasks("doneTasks");
+        doneTasksLiveData.postValue(doneTasks);
+
     }
 }

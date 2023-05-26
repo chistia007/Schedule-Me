@@ -1,4 +1,4 @@
-package com.example.scheduleme.View;
+package com.example.scheduleme.View.UI;
 
 import androidx.appcompat.app.AppCompatActivity;
 

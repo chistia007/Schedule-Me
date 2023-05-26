@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    tools:context=".View.ScheduleMeActivity"
+    tools:context=".View.UI.ScheduleMeActivity"
     android:background="#534B4B"
     android:id="@+id/drawer_layout">
 
