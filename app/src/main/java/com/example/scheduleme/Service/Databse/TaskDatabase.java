@@ -94,7 +94,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         // will drop the database if already exists
-        sqLiteDatabase.execSQL("drop table if exists tasks");
+        sqLiteDatabase.execSQL("drop table if exists allTaks");
         onCreate(sqLiteDatabase);
     }
 
@@ -190,27 +190,29 @@ public class TaskDatabase extends SQLiteOpenHelper {
 
         Task task;
 
+        if (cursor!=null){
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("_id"));
+                    @SuppressLint("Range") String title = cursor.getString(cursor.getColumnIndex("title"));
+                    @SuppressLint("Range") String description = cursor.getString(cursor.getColumnIndex("description"));
+                    @SuppressLint("Range") String dueDate = cursor.getString(cursor.getColumnIndex("dueDate"));
+                    @SuppressLint("Range") String corrTab = cursor.getString(cursor.getColumnIndex("correspondingTable"));
 
-        if (cursor.moveToFirst()) {
-            do {
-                @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("_id"));
-                @SuppressLint("Range") String title = cursor.getString(cursor.getColumnIndex("title"));
-                @SuppressLint("Range") String description = cursor.getString(cursor.getColumnIndex("description"));
-                @SuppressLint("Range") String dueDate = cursor.getString(cursor.getColumnIndex("dueDate"));
-                @SuppressLint("Range") String corrTab = cursor.getString(cursor.getColumnIndex("correspondingTable"));
-
-                if(selectTable=="doneTasks"){
-                    task = new Task(id, title, description, dueDate,true,corrTab);
-                }
-                else{
-                    @SuppressLint("Range") int corrTabId = Integer.parseInt(cursor.getString(cursor.getColumnIndex("correspondingTableId")));
-                    task = new Task(id, title, description, dueDate,false,corrTabId,corrTab);
-                }
+                    if(selectTable.equals("doneTasks")){
+                        task = new Task(id, title, description, dueDate,true,corrTab);
+                    }
+                    else{
+                        @SuppressLint("Range") int corrTabId = Integer.parseInt(cursor.getString(cursor.getColumnIndex("correspondingTableId")));
+                        task = new Task(id, title, description, dueDate,false,corrTabId,corrTab);
+                    }
 
 
-                tasks.add(task); // Add the new Task object to the list of tasks
-            } while (cursor.moveToNext());
+                    tasks.add(task); // Add the new Task object to the list of tasks
+                } while (cursor.moveToNext());
+            }
         }
+
 
         cursor.close(); // Close the cursor
         Log.d("222222222", "getTasks: "+tasks);
@@ -401,5 +403,11 @@ public class TaskDatabase extends SQLiteOpenHelper {
         doneTasks=getTasks("doneTasks");
         doneTasksLiveData.postValue(doneTasks);
 
+    }
+
+    public Cursor dateBasedQuery(String selectedTable, String[] columns, String selection, String[] selectionArgs) {
+        db=getReadableDatabase();
+        Cursor cursor = db.query(selectedTable, columns, selection, selectionArgs, null, null, null);
+        return  cursor;
     }
 }

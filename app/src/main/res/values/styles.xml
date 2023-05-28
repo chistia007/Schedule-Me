@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
+
     <style name="header_style">
         <item name="android:layout_height">30dp</item>
         <item name="android:layout_width">30dp</item>
@@ -59,6 +59,16 @@
         <item name="android:background">#534B4B</item>
         <item name="android:textColor">#FFF</item>
         <item name="android:gravity">bottom</item>
+    </style>
+
+    <style name="Widget.ScheduleMe.AppWidget.Container" parent="android:Widget">
+        <item name="android:id">@android:id/background</item>
+        <item name="android:background">?android:attr/colorBackground</item>
+    </style>
+
+    <style name="Widget.ScheduleMe.AppWidget.InnerView" parent="android:Widget">
+        <item name="android:background">?android:attr/colorBackground</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
 

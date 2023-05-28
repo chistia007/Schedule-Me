@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -13,12 +12,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
-
-
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-
-
 
     <application
         android:allowBackup="true"
@@ -31,24 +24,46 @@
         android:theme="@style/Theme.ScheduleMe"
         tools:targetApi="31">
 
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
+        <receiver
+            android:name=".View.Widget.My_Widget1"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
 
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/my__widget1_info" />
+        </receiver>
+        <service
+            android:name=".View.Widget.MyWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver android:name=".View.Receivers.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".View.Receivers.AlarmReceiver"
             android:enabled="true"
             android:exported="true" />
-
         <receiver
             android:name=".View.Receivers.MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+        <receiver
+            android:name=".View.Receivers.OnGoingNotificationReceiver"
             android:enabled="true"
             android:exported="true" />
 
         <activity
             android:name=".View.UI.SettingsActivity"
             android:exported="false" />
+
+
         <activity
             android:name=".View.UI.ScheduleMeActivity"
             android:exported="true">

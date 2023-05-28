@@ -22,15 +22,12 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "com.example.fcm";
     private static final String CHANNEL_NAME = "Task Reminder";
     private static final String CHANNEL_DESCRIPTION = "Reminds the user to complete a task.";
-
     private String taskTitle;
     String tableName;
     String taskDescription;
     String dueDate;
     int id1;
     int id2;
-
-
     @SuppressLint("MissingPermission")
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -41,9 +38,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         dueDate= intent.getStringExtra("dueDate");
         id1=intent.getIntExtra("id1",-1);
         id2=intent.getIntExtra("id2",-1);
-
-        //Intent notificationIntent = new Intent(context, ToDoActivity.class);
-        //PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_MUTABLE);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -90,7 +84,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .addAction(visitAction)
                 .addAction(doneAction)
                 .setAutoCancel(true);
-
 
         notificationManager.notify(id1, builder.build());
     }

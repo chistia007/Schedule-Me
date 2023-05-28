@@ -18,16 +18,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // Initialize the TaskViewModel
-        taskViewModel = new ViewModelProvider.AndroidViewModelFactory((Application) context.getApplicationContext()).create(TaskViewModel.class);
+        taskViewModel = TaskViewModel.getInstance();
 
-        Log.d("Firestone", "onReceive: received");
         String action = intent.getAction();
-        Log.d("second", "onReceive: received");
 
         if (action != null && action.equals("ACTION_DONE")) {
-
-            Log.d("tjird", "onReceive: received");
-
             String tableName = intent.getStringExtra("tableName");
             String title = intent.getStringExtra("taskTitle");
             String tableDesc = intent.getStringExtra("tableDescription");
@@ -37,12 +32,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
             Log.d("fourth", "onReceive: received"+tableName);
             taskViewModel.deleteData(id1,title,tableDesc,dueDate,id2,tableName,true);
-//                SQLiteDatabase db = mDatabase.getWritableDatabase();
-//                int rowsDeleted = db.delete("allTasks", "_id=?", new String[]{String.valueOf(id1)});
-//                if (rowsDeleted > 0) {
-//                    Toast.makeText(context, "Task deleted", Toast.LENGTH_SHORT).show();
-//                }
-//                mDatabase.close();
         }
     }
 }
