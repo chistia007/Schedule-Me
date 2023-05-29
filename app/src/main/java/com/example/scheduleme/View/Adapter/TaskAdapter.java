@@ -17,7 +17,6 @@ import java.util.List;
 
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
-
     private List<Task> tasks;
     private static OnItemClickListener listener;
     public TaskAdapter(List<Task> tasks,  OnItemClickListener listener) {
@@ -25,6 +24,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         this.listener = listener;
     }
 
+    //responsible for inflating the layout for each item in the RecyclerView
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -33,8 +33,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return new TaskViewHolder(itemView);
     }
 
-
-
+    /**called for each item in the list and responsible for binding the data to the views in the item layout.
+     * It also sets an OnClickListener on the item view and the checkbox.*/
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Task task = tasks.get(position);
@@ -50,12 +50,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                 listener.onItemClick(v, position);
             }
         });
-
         //Here, we set an OnClickListener on the checkbox, and call the onItemClick method of the listener when the checkbox is clicked.
         holder.bind(task, listener);
-
-
-
     }
 
     @Override
@@ -70,17 +66,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     public void setTasks(List<Task> tasks) {
     }
-
+    // it holds references to the views in the item layout.
     static class TaskViewHolder extends RecyclerView.ViewHolder {
-
         TextView taskNameTextView;
         TextView taskDesc;
         TextView dueTimeTextView;
-
-
         CheckBox checkBox;
-
-
         TaskViewHolder(@NonNull View itemView) {
             super(itemView);
             taskNameTextView = itemView.findViewById(R.id.task_name);
@@ -88,10 +79,17 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             dueTimeTextView = itemView.findViewById(R.id.due_time);
             checkBox = itemView.findViewById(R.id.task_checkbox);
 
-
+            //adding long click listener to item view
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    return listener.onItemLongClick(itemView, getAdapterPosition());
+                }
+            });
         }
-        public void bind(Task task, OnItemClickListener listener) {
 
+        //checkbox state and checkbox listener
+        public void bind(Task task, OnItemClickListener listener) {
             checkBox.setChecked(task.isChecked());
             checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 listener.onCheckboxClick(itemView, getAdapterPosition(), isChecked);

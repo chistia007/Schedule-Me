@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
@@ -82,7 +83,6 @@ public class ScheduleMeActivity extends AppCompatActivity {
     Cursor cursor;
     boolean i;
     long k;
-    Boolean checked = false;
     OnItemClickListener listener;
     RecyclerView taskList;
     LinearLayoutManager layoutManager;
@@ -197,7 +197,6 @@ public class ScheduleMeActivity extends AppCompatActivity {
                     UpdateTaskInDialog(line0, line1, line2, line3, line4, line5);
                 }
 
-
                 //checkbox operations: done, undo and etc.
                 @Override
                 public void onCheckboxClick(View view, int position, boolean isChecked) {
@@ -231,16 +230,48 @@ public class ScheduleMeActivity extends AppCompatActivity {
                         // adding task to done task table and deleting it from regular tables
                         int tabId = Float.valueOf(task.get_id(position)).intValue();
                         Log.d("maliha", "onCheckboxClick: "+  task.getCorrespondingTableId());
-                        Boolean s = taskViewModel.deleteData(tabId , task.getTitle(), task.getDescription(), task.getDueDate(), task.getCorrespondingTableId(), task.getCorrespondingTable(), navigation_clicked);
+                        Boolean s = taskViewModel.doneData(tabId , task.getTitle(), task.getDescription(), task.getDueDate(), task.getCorrespondingTableId(), task.getCorrespondingTable(), navigation_clicked);
                         if (s) {
                             Toast.makeText(ScheduleMeActivity.this, "Task Done", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
+
+                @Override
+                public boolean onItemLongClick(View view, int position) {
+                    Task task = tasks.get(position);
+                    line0 = task.get_id(position);
+
+                    androidx.appcompat.app.AlertDialog.Builder builder=new androidx.appcompat.app.AlertDialog.Builder(ScheduleMeActivity.this);
+                    builder.setTitle("Delete "+ task.getTitle()+"?");
+                    builder.setNegativeButton("Cancel", (dialog, which) -> {
+                    });
+                    builder.setPositiveButton("Yes", (dialog, which) -> {
+                        if(doneChecked){
+                            taskViewModel.DeleteFromDoneTaskTable(line0);
+                            taskViewModel.getDoneTasksLiveData().observe(ScheduleMeActivity.this, new Observer<List<Task>>() {
+                                @Override
+                                public void onChanged(List<Task> results) {
+                                    doneTasks=results;
+                                    updateUI(doneTasks);
+                                }
+                            });
+                        }
+                        else {line4 = task.getCorrespondingTableId();
+                            String line5 = task.getCorrespondingTable();
+                            taskViewModel.deleteFromAllTables(line0,line4,line5,navigation_clicked);}
+                    });
+                    builder.create().show();
+                    return true;
+                }
             };
         } catch (Exception e) {
             Log.e("listener error", "Error occurred while performing database operations: " + e.getMessage());
         }
+
+
+
+
     }
 
     /**Responsible for handling navigation drawer */
@@ -481,7 +512,7 @@ public class ScheduleMeActivity extends AppCompatActivity {
                         Toast.makeText(ScheduleMeActivity.this, "It doesn't  belong to " + selectTable, Toast.LENGTH_SHORT).show();
                     }
                 }
-                if (!dueDate.equals("")) {
+                if (!dueDate.equals("") && i) {
                     try {
                         setReminder(selectTable);
                     } catch (ParseException e) {

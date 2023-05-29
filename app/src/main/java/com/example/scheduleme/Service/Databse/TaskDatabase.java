@@ -150,6 +150,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
         return rowId;
 
     }
+
     // how to see the inserted data from the database
     public Cursor getInfo(String selectTable) {
         db = this.getWritableDatabase();
@@ -157,27 +158,22 @@ public class TaskDatabase extends SQLiteOpenHelper {
             case "officeWork":
                 cursor = db.rawQuery("select * from officeWork ", null);
                 break;
-
             case "houseWork":
                 cursor = db.rawQuery("select * from houseWork ", null);
                 break;
-
             case "learning":
                 cursor = db.rawQuery("select * from learning ", null);
                 break;
-
             case "extraCurr":
                 cursor = db.rawQuery("select * from extraCurr ", null);
                 break;
             case "doneTasks":
                 cursor = db.rawQuery("select * from doneTasks ", null);
                 break;
-
             default:
                 cursor = db.rawQuery("select * from allTasks ", null);
                 break;
         }
-
         // close database connection after using the cursor
         return cursor;
     }
@@ -314,7 +310,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
         }
     }
     //Delete a data
-    public boolean deleteData(long id, String title, String description, String dueDate,int corrTabID,String corrTabName, boolean navigation_clicked){
+    public boolean doneData(long id, String title, String description, String dueDate,int corrTabID,String corrTabName, boolean navigation_clicked){
         db = this.getWritableDatabase();
         //adding to done task table first before deleting from regular tables
         c=new ContentValues();
@@ -331,12 +327,10 @@ public class TaskDatabase extends SQLiteOpenHelper {
         long r1=0;
         long id1;
         int id2;
-        Log.d("555555555555555555", "deleteData: "+navigation_clicked + id + " " + corrTabID+ " "+ corrTabName);
         // Specify the selection criteria as the _id field
         if (navigation_clicked){
             id1=(int) id;
             id2=corrTabID;
-            Log.d("nonwwwwwwwwwwwwwwwwww", "deleteData: moewwwwwwwwwwwwwwww"+ corrTabID+ " "+ corrTabName);
         }
         else{
             id1=corrTabID;
@@ -355,7 +349,6 @@ public class TaskDatabase extends SQLiteOpenHelper {
         if (corrTabName.equals("officeWork")){
             officeTasks = getTasks("officeWork");
             officeTasLiveData.postValue(officeTasks);
-
         }
         else if (corrTabName.equals("houseWork")){
             houseTasks = getTasks("houseWork");
@@ -400,9 +393,53 @@ public class TaskDatabase extends SQLiteOpenHelper {
     public void DeleteFromDoneTaskTable(long id){
         db = this.getWritableDatabase();
         db.delete("doneTasks", "_id=?", new String[]{String.valueOf(id)});
+
         doneTasks=getTasks("doneTasks");
         doneTasksLiveData.postValue(doneTasks);
 
+    }
+
+    //All tables except doneTasks
+    public void deleteFromAllTables(long id,int corrTabID,String corrTabName, boolean navigation_clicked){
+        long r = 0;
+        long r1=0;
+        long id1;
+        int id2;
+        // Specify the selection criteria as the _id field
+        if (navigation_clicked){
+            id1=(int) id;
+            id2=corrTabID;
+        }
+        else{
+            id1=corrTabID;
+            id2= (int) id;
+        }
+
+        //Delete operation
+        r = db.delete("allTasks", "_id=?", new String[]{String.valueOf(id1)});
+        allTasks=getTasks("allTasks");
+        allTasksLiveData.postValue(allTasks);
+
+        if(corrTabName!=null && corrTabName!="allTasks"){
+            r1= db.delete(""+corrTabName, "_id=?", new String[]{String.valueOf(id2)});
+        }
+
+        if (corrTabName.equals("officeWork")){
+            officeTasks = getTasks("officeWork");
+            officeTasLiveData.postValue(officeTasks);
+        }
+        else if (corrTabName.equals("houseWork")){
+            houseTasks = getTasks("houseWork");
+            houseTaskLiveData.postValue(houseTasks);
+        }
+        else if (corrTabName.equals("learning")){
+            learningTasks = getTasks("learning");
+            learningTasksLiveData.postValue(learningTasks);
+        }
+        else if (corrTabName.equals("extraCurr")){
+            extraCurrTasks = getTasks("extraCurr");
+            extraTasksLiveData.postValue(extraCurrTasks);
+        }
     }
 
     public Cursor dateBasedQuery(String selectedTable, String[] columns, String selection, String[] selectionArgs) {

@@ -31,7 +31,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             int id2 = intent.getIntExtra("id2",-1);
 
             Log.d("fourth", "onReceive: received"+tableName);
-            taskViewModel.deleteData(id1,title,tableDesc,dueDate,id2,tableName,true);
+            taskViewModel.doneData(id1,title,tableDesc,dueDate,id2,tableName,true);
         }
     }
 }

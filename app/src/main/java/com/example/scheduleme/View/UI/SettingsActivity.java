@@ -26,8 +26,6 @@ import com.example.scheduleme.databinding.ActivitySettingsBinding;
 public class SettingsActivity extends AppCompatActivity {
     ActivitySettingsBinding binding;
     private static final String PREFS_NAME = "MyPrefs";
-    private static final String ALPHA_KEY = "alpha";
-
     private SeekBar seekBar;
     private float alpha;
     Intent intent;
@@ -46,8 +44,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Restore the alpha value from SharedPreferences
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        alpha = prefs.getFloat(ALPHA_KEY, 1.0f);
-        seekBar.setProgress((int) (alpha * 255));
+        int prog = prefs.getInt("progressPref", 255);
+        Log.d("alphavalues----------------------", "onCreate: " +prog);
+        seekBar.setProgress(prog);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -55,6 +54,7 @@ public class SettingsActivity extends AppCompatActivity {
                 setTransparency(progress);
                 SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
                 editor.putInt("progressPref", progress);
+                Log.d("---f-f---", "onProgressChanged: "+progress);
                 editor.apply();
             }
 
@@ -110,30 +110,13 @@ public class SettingsActivity extends AppCompatActivity {
     public void setTransparency(int progress){
         // Get the widget's RemoteViews
         RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.my__widget1);
-        float alpha = (float) progress / 255;
         // Set the alpha value of the widget's RemoteViews
-        int backgroundColor = Color.argb((int)(alpha*255), 158, 144, 144);
+        int backgroundColor = Color.argb(progress, 158, 144, 144);
         remoteViews.setInt(R.id.widgetLayout, "setBackgroundColor", backgroundColor);
 
         // Update the widget
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(SettingsActivity.this);
         ComponentName componentName = new ComponentName(SettingsActivity.this, My_Widget1.class);
         appWidgetManager.updateAppWidget(componentName, remoteViews);
-
-//        Context context = getApplicationContext();
-//        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-//        ComponentName componentName = new ComponentName(SettingsActivity.this, My_Widget1.class);
-//        appWidgetManager.updateAppWidget(componentName, remoteViews);
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        // Save the alpha value to SharedPreferences
-        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-        editor.putFloat(ALPHA_KEY, alpha);
-        editor.apply();
-    }
-
 }

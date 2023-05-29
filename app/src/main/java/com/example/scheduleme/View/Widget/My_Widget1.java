@@ -9,12 +9,14 @@ import android.database.Cursor;
 import android.util.Log;
 import android.widget.RemoteViews;
 import com.example.scheduleme.R;
+import com.example.scheduleme.Service.Databse.TaskDatabase;
 import com.example.scheduleme.View.UI.ScheduleMeActivity;
 import com.example.scheduleme.ViewModel.TaskViewModel;
 
 public class My_Widget1 extends AppWidgetProvider {
     TaskViewModel taskViewModel;
     Cursor cursor;
+    TaskDatabase taskDatabase;
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
@@ -31,8 +33,9 @@ public class My_Widget1 extends AppWidgetProvider {
             views.setOnClickPendingIntent(R.id.totalTodos, pendingIntent);
 
             //Total number of todos for widget
-            taskViewModel=TaskViewModel.getInstance();
-            cursor=taskViewModel.getInfo("allTasks");
+            //taskViewModel=TaskViewModel.getInstance();
+            taskDatabase=TaskDatabase.getInstance(context);
+            cursor=taskDatabase.getInfo("allTasks");
             int index = 0; // keep track of the current index
             while (cursor.moveToNext()) {
                 index++;

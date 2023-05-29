@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import com.example.scheduleme.R;
+import com.example.scheduleme.Service.Databse.TaskDatabase;
 import com.example.scheduleme.ViewModel.TaskViewModel;
 
 
@@ -33,12 +34,17 @@ public class OnGoingNotificationReceiver extends BroadcastReceiver {
     String nextDate;
     Date currentDate;
     int index;
+    TaskDatabase taskDatabase;
     @SuppressLint("Range")
+
     public void onReceive(Context context, Intent intent) {
-        taskViewModel=TaskViewModel.getInstance();
-        ///fixed notification
         ArrayList<String> dates = new ArrayList<>();
-        cursor = taskViewModel.getInfo("allTasks");
+        //taskViewModel=TaskViewModel.getInstance();
+        taskDatabase=TaskDatabase.getInstance(context);
+
+        ///fixed notification
+        //TODO: fetch from viewModel
+        cursor = taskDatabase.getInfo("allTasks");
         while (cursor.moveToNext()) {
             if (!cursor.getString(3).equals("")) { //since due date at 4th index
                 dates.add(cursor.getString(3));
@@ -77,8 +83,8 @@ public class OnGoingNotificationReceiver extends BroadcastReceiver {
             String selection = "dueDate = ?";
             String[] selectionArgs = {nextDate};
 
-
-            Cursor cursor = taskViewModel.dateBasedQuery("allTasks", columns, selection, selectionArgs);
+            //TODO: fetch from viewModel
+            Cursor cursor = taskDatabase.dateBasedQuery("allTasks", columns, selection, selectionArgs);
             if (cursor.moveToFirst()) {
                 do {
                     title = cursor.getString(cursor.getColumnIndex("title"));
